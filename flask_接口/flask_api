@@ -1,0 +1,48 @@
+#encoding: utf-8
+import struct
+from flask import Flask, request
+import zlib
+from flask_restful import Api, Resource, reqparse
+import os
+import json
+import pandas as pd
+
+app = Flask(__name__)
+api = Api(app)
+
+
+@app.route('/', methods=["POST"])
+def login():
+    # 判断入参是否为空
+    if request.get_data() is None:
+        return '请求参数为空'
+
+    target_version_code = request.form.get("target_version_code")
+    begin_index = request.form.get("begin_index")
+    size = request.form.get("size")
+
+    filepath = os.path.join('./static', 'code_version', str(target_version_code), 'Blink.bin')
+    size_of_file = os.path.getsize(filepath)
+
+    if int(begin_index) < size_of_file:
+        with open(filepath, 'rb') as file:
+            file.seek(int(begin_index), 0)          # 将文件指针调到begin_index位
+            code_content = file.read(int(size))     # 读取文件代码内容
+            crc32 = zlib.crc32(code_content)        # crc32校验
+            print(crc32)
+            size_of_file = size_of_file.to_bytes(2, byteorder='little', signed=True)
+            data = bytearray(size_of_file)
+            print(data)
+            print('------')
+            crc_bytes = struct.pack("<I", crc32)
+            print(crc_bytes)
+            data.extend(code_content)
+            data.extend(crc_bytes)
+            print(len(data))
+            return data
+    else:
+        return '发送完成'
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
