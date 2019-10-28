@@ -1,48 +1,58 @@
-#encoding: utf-8
-import struct
-from flask import Flask, request
+
+import requests
 import zlib
-from flask_restful import Api, Resource, reqparse
-import os
-import json
-import pandas as pd
 
-app = Flask(__name__)
-api = Api(app)
+version = 1   # 版本号
+begin_index = 0     # 查询位
+size = 128    # 字节大小
+project = "text"    # 项目
+url = "http://114.115.253.192:5000"
 
 
-@app.route('/', methods=["POST"])
-def login():
-    # 判断入参是否为空
-    if request.get_data() is None:
-        return '请求参数为空'
+def get_code(size):
+    code_content = data[2:size + 2]  # 数据的前size位 即代码内容
+    crc32_code = zlib.crc32(code_content)  # 由代码内容生成crc32编码
+    print("有传输来的代码生成的crc32为:" + str(crc32_code))
+    crc32 = data[size + 2:]  # 截取传输来的crc32编码
+    crc_value = int.from_bytes(crc32, byteorder='little', signed=False)
+    print('传输来的crc32为:' + str(crc_value))
 
-    target_version_code = request.form.get("target_version_code")
-    begin_index = request.form.get("begin_index")
-    size = request.form.get("size")
+    if crc32_code != crc_value:
+        print('传输数据出错')
+    with open('blink.bin', 'ab+') as file:
+        file.write(code_content)
+        print('文件写入内容为:' + str(code_content))
 
-    filepath = os.path.join('./static', 'code_version', str(target_version_code), 'Blink.bin')
-    size_of_file = os.path.getsize(filepath)
 
-    if int(begin_index) < size_of_file:
-        with open(filepath, 'rb') as file:
-            file.seek(int(begin_index), 0)          # 将文件指针调到begin_index位
-            code_content = file.read(int(size))     # 读取文件代码内容
-            crc32 = zlib.crc32(code_content)        # crc32校验
-            print(crc32)
-            size_of_file = size_of_file.to_bytes(2, byteorder='little', signed=True)
-            data = bytearray(size_of_file)
-            print(data)
-            print('------')
-            crc_bytes = struct.pack("<I", crc32)
-            print(crc_bytes)
-            data.extend(code_content)
-            data.extend(crc_bytes)
-            print(len(data))
-            return data
+while True:
+    parms = {
+        "project": str(project),
+        "target_version_code": str(version),  # 发送给服务器的内容
+        "begin_index": str(begin_index),
+        "size": str(size)
+    }
+
+    res = requests.post(url, data=parms)  # 发送请求
+
+    if len(res.content) > 12:
+        data = res.content
+        print('传输的数据为:' + str(data))
+        print("传输数据的长度为:" + str(len(data)))
+        file_size = data[:2]            # 截取传输来的文件大小
+        size_of_file = int.from_bytes(file_size, byteorder='little', signed=False)
+        print("文件大小为:" + str(size_of_file))
+
+        remainder_of_size = size_of_file % size
+        begin_index += size
+
+        if begin_index <= size_of_file:
+            get_code(size)
+
+        elif begin_index > size_of_file and (begin_index - size) <= size_of_file:
+            size = remainder_of_size
+            get_code(size)
+        else:
+            break
     else:
-        return '发送完成'
+        break
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
