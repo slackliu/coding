@@ -4,8 +4,6 @@ from flask import Flask, request
 import zlib
 from flask_restful import Api, Resource, reqparse
 import os
-import json
-import pandas as pd
 
 app = Flask(__name__)
 api = Api(app)
@@ -16,12 +14,12 @@ def login():
     # 判断入参是否为空
     if request.get_data() is None:
         return '请求参数为空'
-
+    project = request.form.get("project")
     target_version_code = request.form.get("target_version_code")
     begin_index = request.form.get("begin_index")
     size = request.form.get("size")
 
-    filepath = os.path.join('./static', 'code_version', str(target_version_code), 'Blink.bin')
+    filepath = os.path.join('./static', project, str(target_version_code), 'Blink.bin')
     size_of_file = os.path.getsize(filepath)
 
     if int(begin_index) < size_of_file:
@@ -33,7 +31,7 @@ def login():
             size_of_file = size_of_file.to_bytes(2, byteorder='little', signed=True)
             data = bytearray(size_of_file)
             print(data)
-            print('------')
+
             crc_bytes = struct.pack("<I", crc32)
             print(crc_bytes)
             data.extend(code_content)
