@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        form {
+            width: 500px;
+            border: 1px solid rgba(0,0,0,0.7);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin: 100px auto;
+        }
+        form>div {
+            margin: 15px 0;
+            padding: 0 50px;
+        }
+        input[type='text']{
+            width: 300px;
+            height: 30px;
+        }
+        input[type='radio'] {
+            margin: 0 10px;
+        }
+        input[type='submit'],input[type='button']{
+            width: 100px;
+            height: 30px;
+            border: 1px solid rgba(0,0,0,0.5);
+            color: white;
+            background: rgba(0,0,0,0.7);
+            border-radius: 5px;
+        }
+        form>div:last-child{
+            text-align: right;
+        }
+
+        #photo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-left: 20px;
+        }
+        #file {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!--在文件上传时form表单的数据传输方式必须为post，并且编码格式必须为multipart/form-data，否则服务器端是无法获取传输的文件数据-->
+    <form action="" method="post" name="form" enctype="multipart/form-data">
+        <div>
+            file: <input type="file" name="file" size=50>
+        </div>
+
+        <div>
+            project : <input type="text" name="project" value="TestPro">
+        </div>
+
+        <div>
+            version : <input type="text" name="version" value="1.0.0.1">
+        </div>
+        <div>
+            <input type="submit" value="上传">
+        </div>
+    </form>
+</body>
+</html>
+
+
+
