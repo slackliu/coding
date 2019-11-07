@@ -1,0 +1,35 @@
+from flask import Flask, render_template, jsonify, request
+from werkzeug.utils import secure_filename
+import os
+import hex_to_bin as h2b
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def hello_world():
+    return 'Hello World!'
+
+
+@app.route('/upload/', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'GET':
+        return render_template('upload.html')
+    else:
+        project = request.form.get("project")
+        version = request.form.get("version")
+        avatar = request.files.get('file')
+        # 对文件名进行包装，为了安全,不过对中文的文件名显示有问题
+        filename = secure_filename(avatar.filename)
+        base_path = os.path.abspath(os.path.dirname(__file__))
+        file_path = os.path.join(base_path, 'static', project, version)
+        print(file_path)
+        if not os.path.exists(file_path):
+            os.mkdir(file_path)
+        avatar.save(os.path.join(file_path, filename))
+        h2b.main(file_path)
+        return '文件上传成功'
+
+
+if __name__ == '__main__':
+    app.run()
