@@ -1,0 +1,49 @@
+阅读资料 第 0011 题： 敏感词文本文件 filtered_words.txt，里面的内容为以下内容，当用户输入敏感词语时，则打印出 Freedom，否则打印出 Human Rights。
+
+ 北京
+ 程序员
+ 公务员
+ 领导
+ 牛比
+ 牛逼
+ 你娘
+ 你妈
+ love
+ sex
+ jiangge
+--------------------- 
+
+
+def get_filters(path):
+    if path is None:
+        return
+    filters = ["北京", "程序员", "公务员", "领导", "牛比", "牛逼", "你娘", "你妈", "love", "sex", "jiangge"]
+    with open(path,encoding="utf-8") as f:
+        line = f.read()
+    # for line in (open(path, "w", encoding="utf-8").readlines()):
+        if "\n" in line:
+            filters.append(line[:-1])
+        else:
+            filters.append(line)
+
+    f.close()
+
+    return filters
+
+def main():
+    filters = get_filters("1.txt")
+    while True:
+        temp = input("plz input:")
+        if temp == "0":
+            print("Exit")
+            break
+        else:
+            if temp in filters:
+                print("Freedom")
+            else:
+                print("Human Rights")
+
+
+
+if __name__ == "__main__":
+    main()

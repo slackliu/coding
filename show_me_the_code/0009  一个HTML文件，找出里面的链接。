@@ -1,0 +1,18 @@
+
+
+
+
+import re
+import os
+
+def handle_html(file_name):
+    print(os.getcwd())
+    line = open(file_name, 'r', encoding='utf-8').read()
+    pattern = (r'([hftps]+://[^\s]*)"')
+    for i in (re.findall(pattern, line)):
+        print(i)
+
+if __name__ == "__main__":
+    html = "./html1.html"
+    handle_html(html)
+
